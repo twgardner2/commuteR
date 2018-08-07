@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1533639806757.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2447314775",
+    "id" : "1200D53E",
+    "lastKnownWriteTime" : 1533641196,
+    "last_content_update" : 1533641196680,
+    "path" : "~/Documents/R/commuteR/ui.R",
+    "project_path" : "ui.R",
+    "properties" : {
+        "cursorPosition" : "16,39",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
