@@ -6,15 +6,13 @@ library("shinydashboard")
 library("shiny")
 library("tidyverse")
 
-
-
-# Load 2018 Tracker, Daily Times sheet
+# Load 2018 Tracker ----
 tracker <- gs_url(
-  x = "https://docs.google.com/spreadsheets/d/11JAREyf0pTdR0d0b_DXDjOsI8P5L2WH_P31ALfqtSXI/edit?usp=sharing",
+  x      = "https://docs.google.com/spreadsheets/d/11JAREyf0pTdR0d0b_DXDjOsI8P5L2WH_P31ALfqtSXI/edit?usp=sharing",
   lookup = TRUE
 )
 
-# Read 'Daily Times' tab (ws = 2)
+# Read 'commute' tab (ws = 2) ----
 commuteRaw <- gs_read(
   ss = tracker,
   ws = 2,
@@ -41,7 +39,7 @@ commuteRaw <- gs_read(
                    score_Evening          = 'i')
 )
 
-# Remove future rows
+# Remove future rows ----
 commuteRaw <- commuteRaw %>% filter(date < Sys.Date())
 
 
@@ -58,53 +56,27 @@ commute <- commuteRaw %>% mutate(alarm               = as.POSIXct(alarm, format=
                               trainDepart_Evening    = as.POSIXct(trainDepart_Evening, format="%H:%M"),
                               trainDepart_Morning    = as.POSIXct(trainDepart_Morning, format="%H:%M"))
 
+# Compute fields ----
 commute <- commute %>% mutate(totalCommute_Morning = arriveWork - departHouse,
                               totalCommute_Evening = arriveHome - departWork,
-                              totalGoneForDay      = arriveHome - departHouse)
+                              totalGoneForDay      = arriveHome - departHouse,
+                              totalDriveHome       = arriveHome - carDepart_Evening)
 
 
 # Train Ride Density Plot
-tempPlotData <- commute %>% filter(trainNum_Morning == "328") %>% 
-  select(departHouse, arrivePlatform_Morning, trainDepart_Morning, trainArrive_Morning, arriveWork) %>% 
-  gather()
-
-plot <- data.frame(tempPlotData) %>% ggplot(aes(x=value, fill=key))
-plot + geom_density(alpha=0.25)
-
-
-# Typical arrival home for given evening train
-tempPlotData <- commute %>% filter(trainNum_Evening == "331") %>% 
-  select(arriveHome) %>% 
-  gather()
-plot <- data.frame(tempPlotData) %>% ggplot(aes(x=value, fill=key))
-plot + geom_density(alpha=0.25)
-
-# Table of typicial arrival home based on train
-commute %>% filter(!is.na(arriveHome)) %>% group_by(trainNum_Evening) %>% summarize(result = mean(arriveHome))
+# tempPlotData <- commute %>% filter(trainNum_Morning == "328") %>% 
+#   select(departHouse, arrivePlatform_Morning, trainDepart_Morning, trainArrive_Morning, arriveWork) %>% 
+#   gather()
+# 
+# plot <- data.frame(tempPlotData) %>% ggplot(aes(x=value, fill=key))
+# plot + geom_density(alpha=0.25)
 
 
-# Density plot of arrive home by evening train
-tempPlotData <- commute %>% 
-  filter(!is.na(arriveHome)) %>% #filter(!trainNum_Evening=="333") %>% 
-  select(trainNum_Evening, arriveHome) 
-plot <- data.frame(tempPlotData) %>% ggplot(aes(x=arriveHome, fill=trainNum_Evening))
-plot + geom_histogram()
-
-plot + geom_density(alpha=0.5)
-
-
-
-
-plot <- data.frame(commute) %>% ggplot(aes(x=arriveWork))
-plot + geom_density()
-
-plot <- data.frame(commute) %>% ggplot(aes(x=alarm))
-plot + geom_density()
-
-
-
-
-
+# plot <- data.frame(commute) %>% ggplot(aes(x=arriveWork))
+# plot + geom_density()
+# 
+# plot <- data.frame(commute) %>% ggplot(aes(x=alarm))
+# plot + geom_density()
 
 
 # Correct Google Sheet Format (spread and rewrite to sheets) --------------
