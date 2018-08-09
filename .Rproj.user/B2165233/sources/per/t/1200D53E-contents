@@ -17,9 +17,10 @@ dashboardPage(
   ),
   
   dashboardBody(
-    dataTableOutput("arriveHomeMeanByTrain_Table"),
+    DTOutput("arriveHomeMeanByTrain_Table"),
     plotOutput("arriveAndLeaveWork_DensityPlot"),
-    plotOutput("arriveHomeForGivenTrain_DensityPlot"),
+    #plotOutput("arriveHomeForGivenTrain_DensityPlot"),
+    DTOutput("ts_Data"),
     plotOutput("arriveHomeForEachTrain_DensityPlot")
   )
   

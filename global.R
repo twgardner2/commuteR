@@ -1,6 +1,6 @@
 library("googlesheets")
 library("ggplot2")
-suppressPackageStartupMessages(library("dplyr"))
+library("DT")
 library("lubridate")
 library("shinydashboard")
 library("shiny")
@@ -40,12 +40,12 @@ commuteRaw <- gs_read(
 )
 
 # Remove future rows ----
-commuteRaw <- commuteRaw %>% filter(date < Sys.Date())
+commuteRaw <- commuteRaw %>% filter(date <= Sys.Date())
 
 
 # Convert times to POSIXct ----
 commute <- commuteRaw %>% mutate(alarm               = as.POSIXct(alarm, format="%H:%M"),
-                              arriveHome             = as.POSIXct(arriveHome, format="%H:%M"),
+                              arriveHome             = as.POSIXct(arriveHome, format="%H:%M", tz="America/New_York"),
                               arrivePlatform_Morning = as.POSIXct(arrivePlatform_Morning, format="%H:%M"),
                               arriveWork             = as.POSIXct(arriveWork, format="%H:%M"),
                               carDepart_Evening      = as.POSIXct(carDepart_Evening, format="%H:%M"),

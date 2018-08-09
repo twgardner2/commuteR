@@ -1,5 +1,4 @@
 
-
 shinyServer(function(input, output, session) {
 
 
@@ -10,18 +9,18 @@ shinyServer(function(input, output, session) {
       averageDriveHome <- commute %>% filter(!is.na(totalDriveHome)) %>% 
         select(totalDriveHome) %>% 
         summarize(mean(totalDriveHome)) %>% 
-        unlist()
+        unlist() *60 #%>% as.POSIXct(origin="1970-01-01 00:00:00")
       
       commuteImputed <- commute %>% mutate(arriveHome = ifelse((is.na(arriveHome) & !is.na(carDepart_Evening)),
-                                                                carDepart_Evening + averageDriveHome, 
+                                                                as.POSIXct(carDepart_Evening + averageDriveHome), 
                                                                 arriveHome))
+      print(commuteImputed %>% select(arriveHome))
       return(commuteImputed)
     } else {
       return(commute)
     }
     
   })
-  
   
   # Work arrive/depart density plot ----
   output$arriveAndLeaveWork_DensityPlot <- renderPlot({
@@ -50,19 +49,28 @@ shinyServer(function(input, output, session) {
       filter(!is.na(arriveHome)) %>% # filter(!trainNum_Evening=="333") %>%
       select(trainNum_Evening, arriveHome)
     plot <- data.frame(tempPlotData) %>% ggplot(aes(x = arriveHome, fill = trainNum_Evening))
-    # plot + geom_histogram()
-
-    plot + geom_density(alpha = 0.5)
+    plot + geom_histogram()
+    # plot + geom_density(alpha = 0.5)
   })
 
   # Table of typicial arrival home based on train ----
-  output$arriveHomeMeanByTrain_Table <- renderDataTable({
+  output$arriveHomeMeanByTrain_Table <- renderDT({
     
     data() %>% filter(!is.na(arriveHome)) %>% 
       group_by(trainNum_Evening) %>% 
-      summarize(result = mean(arriveHome))
-  
-    
+      summarize(result = mean(arriveHome)) %>% 
+      datatable() # %>% 
+      #formatDate('result', method = "toLocaleTimeString")
+
     })
   
-})
+
+  # Troubleshooting table to show data() ----
+  output$ts_Data <- renderDT({
+    data() %>% select(trainNum_Evening, arriveHome) %>% 
+      datatable() # %>% 
+      #formatDate(2, method = "toLocaleTimeString", params = NULL)
+    
+  })
+  
+  })
