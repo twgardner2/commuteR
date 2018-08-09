@@ -6,13 +6,15 @@ shinyServer(function(input, output, session) {
   data <- reactive({
     
     if(input$cb_imputeDriveHome == TRUE) {
-      averageDriveHome <- commute %>% filter(!is.na(totalDriveHome)) %>% 
+      averageDriveHomeSec <- commute %>% filter(!is.na(totalDriveHome)) %>% 
         select(totalDriveHome) %>% 
         summarize(mean(totalDriveHome)) %>% 
-        unlist() *60 #%>% as.POSIXct(origin="1970-01-01 00:00:00")
+        unlist() %>% 
+        unname() %>% 
+        as.double() * 60
       
-      commuteImputed <- commute %>% mutate(arriveHome = ifelse((is.na(arriveHome) & !is.na(carDepart_Evening)),
-                                                                as.POSIXct(carDepart_Evening + averageDriveHome), 
+      commuteImputed <- commute %>% mutate(arriveHome = if_else((is.na(arriveHome) & !is.na(carDepart_Evening)),
+                                                                carDepart_Evening + averageDriveHomeSec, 
                                                                 arriveHome))
       print(commuteImputed %>% select(arriveHome))
       return(commuteImputed)
