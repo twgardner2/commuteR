@@ -5,14 +5,14 @@
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "26|36|36|0|\n37|49|46|0|\n47|51|56|0|\n",
-    "hash" : "1829062952",
+    "hash" : "0",
     "id" : "FC2EF731",
-    "lastKnownWriteTime" : 1533819640,
-    "last_content_update" : 1533819640876,
+    "lastKnownWriteTime" : 1533820821,
+    "last_content_update" : 1533820821768,
     "path" : "~/Documents/R/commuteR/server.R",
     "project_path" : "server.R",
     "properties" : {
-        "cursorPosition" : "15,59",
+        "cursorPosition" : "0,14",
         "scrollLine" : "0",
         "tempName" : "Untitled1"
     },
