@@ -6,6 +6,8 @@ library("shinydashboard")
 library("shiny")
 library("tidyverse")
 
+Sys.setenv(TZ = "UTC")
+
 # Load 2018 Tracker ----
 tracker <- gs_url(
   x      = "https://docs.google.com/spreadsheets/d/11JAREyf0pTdR0d0b_DXDjOsI8P5L2WH_P31ALfqtSXI/edit?usp=sharing",
@@ -17,8 +19,9 @@ commuteRaw <- gs_read(
   ss = tracker,
   ws = 2,
   range = cell_cols('A:T'),
+  locale = locale(tz = "UTC"),
   col_types = cols(date                   = col_date(format = "%y-%m-%d"), 
-                   alarm                  = 't',
+                   alarm                  = col_time(),
                    departHouse            = 't',
                    arrivePlatform_Morning = 't',
                    route_Morning          = 'c',
@@ -33,7 +36,7 @@ commuteRaw <- gs_read(
                    arrivePlatform_Evening = 't',
                    trainDepart_Evening    = 't',
                    carDepart_Evening      = 't',
-                   arriveHome             = "t", 
+                   arriveHome             = col_time(), 
                    route_Evening          = 'c',
                    mpg_Evening            = 'd',
                    score_Evening          = 'i')
@@ -45,7 +48,7 @@ commuteRaw <- commuteRaw %>% filter(date <= Sys.Date())
 
 # Convert times to POSIXct ----
 commute <- commuteRaw %>% mutate(alarm               = as.POSIXct(alarm, format="%H:%M"),
-                              arriveHome             = as.POSIXct(arriveHome, format="%H:%M", tz="America/New_York"),
+                              arriveHome             = as.POSIXct(arriveHome, format="%H:%M"), #, tz="America/New_York"),
                               arrivePlatform_Morning = as.POSIXct(arrivePlatform_Morning, format="%H:%M"),
                               arriveWork             = as.POSIXct(arriveWork, format="%H:%M"),
                               carDepart_Evening      = as.POSIXct(carDepart_Evening, format="%H:%M"),

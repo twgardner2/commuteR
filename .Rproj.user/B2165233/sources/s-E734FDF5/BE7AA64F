@@ -5,7 +5,7 @@
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "100|25|108|0|\n109|46|115|0|\n116|47|119|0|\n120|46|141|0|\n",
-    "hash" : "1014727758",
+    "hash" : "0",
     "id" : "BE7AA64F",
     "lastKnownWriteTime" : 1533819640,
     "last_content_update" : 1533819640939,
@@ -13,7 +13,7 @@
     "project_path" : "script.R",
     "properties" : {
         "cursorPosition" : "58,0",
-        "scrollLine" : "47",
+        "scrollLine" : "0",
         "tempName" : "Untitled1"
     },
     "relative_order" : 4,
