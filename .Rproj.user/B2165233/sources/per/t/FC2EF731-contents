@@ -13,13 +13,18 @@ shinyServer(function(input, output, session) {
         unname() %>%
         as.double() * 60
 
-      commuteImputed <- commute %>% mutate(arriveHome = if_else((is.na(arriveHome) & !is.na(carDepart_Evening)),
-        carDepart_Evening + averageDriveHomeSec,
-        arriveHome
-      ))
+      commuteImputed <- commute %>% 
+        mutate(arriveHome      = if_else((is.na(arriveHome) & !is.na(carDepart_Evening)),
+                                    carDepart_Evening + averageDriveHomeSec,
+                                    arriveHome
+                                    ),
+               totalGoneForDay = arriveHome - departHouse
+               )
       print(commuteImputed %>% select(arriveHome))
       return(commuteImputed)
     } else {
+      commute <- commute %>% 
+        mutate(totalGoneForDay = arriveHome - departHouse)
       return(commute)
     }
   })
@@ -147,11 +152,11 @@ shinyServer(function(input, output, session) {
         meanMorningCommute = round(mean(totalCommute_Morning), 2)
       )
 
-  infoBox(
+    infoBox(
       title = "Average Morning Commute",
       value = paste0(morningCommuteAverage, " hours"),
-      icon = icon("calendar"),
-      color = "aqua",
+      icon = icon("building"),
+      color = "orange",
       fill = TRUE
     )
   })
@@ -169,13 +174,92 @@ shinyServer(function(input, output, session) {
     infoBox(
       title = "Average Evening Commute",
       value = paste0(eveningCommuteAverage, " hours"),
-      icon = icon("calendar"),
-      color = "aqua",
+      icon = icon("home"),
+      color = "maroon",
       fill = TRUE
     )
   })
 
-
+  # Total Gone For Day InfoBox----
+  output$totalGoneForDay_InfoBox <- renderInfoBox({
+    
+    meanTotalGoneForDay <- data() %>%
+      filter(!is.na(totalGoneForDay)) %>%
+      pull(totalGoneForDay) %>%
+      mean() %>% 
+      round(1)
+      
+    
+    infoBox(
+      title = "Average Gone For Day",
+      value = paste0(meanTotalGoneForDay, " hours"),
+      #icon = icon("stopwatch"),
+      icon = icon("time", lib = "glyphicon"),
+      color = "maroon",
+      fill = TRUE
+    )
+  })
+  # MPG Analysis----
+  
+    # morningMPG_Mean <- commute %>% 
+    #   filter(!is.na(mpg_Morning)) %>% 
+    #   group_by(route_Morning) %>% 
+    #   summarize(meanMPG = mean(mpg_Morning), count = n())
+    # 
+    # eveningMPG_Mean <- commute %>% 
+    #   filter(!is.na(mpg_Evening)) %>% 
+    #   group_by(route_Evening) %>% 
+    #   summarize(meanMPG = mean(mpg_Evening), count = n())
+  output$mpgTestTable <- renderDT({
+    morningMPG_Vec <- commute %>% 
+      filter(!is.na(mpg_Morning)) %>% 
+      pull(mpg_Morning)
+    
+    eveningMPG_Vec <- commute %>% 
+      filter(!is.na(mpg_Evening)) %>% 
+      pull(mpg_Evening)
+    
+    tTest <- t.test(x = morningMPG_Vec, y = eveningMPG_Vec)
+    
+    tTestSignificance <- 
+      if(tTest$p.value > 0.10) {
+        ""
+      } else if(tTest$p.value > 0.05)  {
+        "*"
+      } else if(tTest$p.value > 0.01)  {
+        "**"
+      } else {
+        "***"
+      }
+        
+    mpgTestTable <- tibble(mean(morningMPG_Vec),
+                           mean(eveningMPG_Vec),
+                           mean(morningMPG_Vec) - mean(eveningMPG_Vec),
+                           tTest$p.value,
+                           tTestSignificance)
+    mpgTestTable %>% 
+      datatable(
+        options = list(
+          paging = FALSE,
+          searching = FALSE,
+          bInfo = FALSE
+        ),
+        rownames = FALSE,
+        colnames = c(
+          "Average Morning MPG",
+          "Average Evening MPG",
+          "Difference",
+          "2-Sample t-Test P-Value",
+          "Significance"
+        ),
+        filter = "none",
+        autoHideNavigation = TRUE
+      ) %>% 
+      formatRound(1:3, 1) %>% 
+      formatSignif(4, digits = 2, interval = 3, mark = ",", 
+                   dec.mark = getOption("OutDec"))
+  
+  })
   # Troubleshooting table to show data() ----
   output$ts_Data <- renderDT({
     data() %>%

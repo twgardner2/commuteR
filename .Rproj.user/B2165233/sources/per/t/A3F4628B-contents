@@ -62,7 +62,6 @@ commute <- commuteRaw %>% mutate(alarm               = as.POSIXct(alarm, format=
 # Compute fields ----
 commute <- commute %>% mutate(totalCommute_Morning = arriveWork - departHouse,
                               totalCommute_Evening = arriveHome - departWork,
-                              totalGoneForDay      = arriveHome - departHouse,
                               totalDriveHome       = arriveHome - carDepart_Evening)
 
 
