@@ -1,4 +1,4 @@
-library("googlesheets")
+library("googlesheets4")
 library("ggplot2")
 library("DT")
 library("lubridate")
@@ -8,11 +8,49 @@ library("tidyverse")
 
 Sys.setenv(TZ = "UTC")
 
-# Load 2018 Tracker ----
-tracker <- gs_url(
-  x      = "https://docs.google.com/spreadsheets/d/11JAREyf0pTdR0d0b_DXDjOsI8P5L2WH_P31ALfqtSXI/edit?usp=sharing",
-  lookup = TRUE
+# Load 17H Tracker ----
+gs4_deauth()
+raw_data <- googlesheets4::read_sheet(
+  ss = 'https://docs.google.com/spreadsheets/d/15334OCPKXEp6HIRIWLiJdVqJq97VnJujI6R9FB1sK7c/edit#gid=0',
+  sheet = 1,
+  range = cell_cols('A:G'),
+  # locale = locale(tz = "UTC"),
+  col_types = 'cciiccc' # reading dates and times as characters and handling in next step
+  ## Leaving this for when googlesheets4 implements cols() column type specification
+  # col_types = cols(date           = col_date(format = "%y-%m-%d"), 
+  #                  route          = 'c',
+  #                  bus_num        = 'd',
+  #                  stop_id        = 'i',
+  #                  stop_desc      = 'c',
+  #                  time_at_stop   = 't',
+  #                  time_at_pentagon = 't'
+  # )
 )
+
+data <- raw_data %>% 
+  rename(
+    date_raw = date, 
+    time_at_stop_raw = time_at_stop, 
+    time_at_pentagon_raw = time_at_pentagon
+  ) %>% 
+  mutate(
+    date = lubridate::ymd(date_raw), 
+    time_at_stop = gsub('^(\\d+)(\\d{2})$', '\\1:\\2', time_at_stop_raw),
+    time_at_pentagon = gsub('^(\\d+)(\\d{2})$', '\\1:\\2', time_at_pentagon_raw),
+    
+    # time_at_stop = lubridate::hm(time_at_stop))
+    time_at_stop = lubridate::parse_date_time(time_at_stop, orders="HM"),
+    time_at_pentagon = lubridate::parse_date_time(time_at_pentagon, orders="HM"),
+    
+    trip_duration = lubridate::interval(time_at_stop, time_at_pentagon) %/% minutes()
+  )
+    
+
+# Load 2018 Tracker ----
+# tracker <- googlesheets::gs_url(
+#   x      = "https://docs.google.com/spreadsheets/d/11JAREyf0pTdR0d0b_DXDjOsI8P5L2WH_P31ALfqtSXI/edit?usp=sharing",
+#   lookup = TRUE
+# )
 
 # Read 'commute' tab (ws = 2) ----
 commuteRaw <- gs_read(
